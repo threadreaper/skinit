@@ -1,17 +1,17 @@
 [kdeglobals][KDE]
-widgetStyle=oxygen
+widgetStyle=skinit
 
 [kdeglobals][General]
-ColorScheme=Oxygen
+ColorScheme=skinit
 
 [kdeglobals][Icons]
-Theme=oxygen
+Theme=skinit
 
 [plasmarc][Theme]
-name=air
+name=skinit
 
 [kcminputrc][Mouse]
-cursorTheme=Oxygen_Black
+cursorTheme=skinit
 
 [kwinrc][org.kde.kdecoration2]
-library=org.kde.oxygen
+library=skinit
