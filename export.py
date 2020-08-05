@@ -21,7 +21,7 @@ def export_wallpaper(img, splash):
         data = {"replace_string": file_name}
         utility.substitute(splash_temp, splash_qml, **data)
 
-    elif not splash:
+    else:
         logging.info("Bypassed setting splash screen wallpaper.")
 
     string = """
