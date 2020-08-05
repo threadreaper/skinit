@@ -22,7 +22,7 @@ import QtQuick 2.1
 
 Image {
     id: root
-    source: "images/wall5.jpg"
+    source: "images/replace_string"
 
     property int stage
 
