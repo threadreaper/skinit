@@ -1,0 +1,26 @@
+{
+    "wallpaper": "/home/michael/Downloads/wall5.jpg",
+    "special": {
+        "background": "#b2754d",
+        "foreground": "#74c3db",
+        "cursor": "#74c3db"
+    },
+    "colors": {
+        "color0": "#b2754d",
+        "color1": "#e49562",
+        "color2": "#aca9a5",
+        "color3": "#dedad4",
+        "color4": "#71b758",
+        "color5": "#8fe970",
+        "color6": "#5a97a9",
+        "color7": "#74c3db",
+        "color8": "#2ea0c6",
+        "color9": "#39c8f8",
+        "color10": "#358baa",
+        "color11": "#44b3dc",
+        "color12": "#1477aa",
+        "color13": "#199adc",
+        "color14": "#849ca9",
+        "color15": "#abcadb"
+    }
+}

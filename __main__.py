@@ -1,5 +1,5 @@
 """
-Theme Generator for KDE 5 Plasma
+SkinIt! Theme Generator for KDE 5 Plasma
 Michael Podrybau
 email: threadreaper@gmail.com
 https://github.com/threadreaper
@@ -10,9 +10,7 @@ import sys
 import logging
 import os
 
-from pywal import image
-from pywal import colors
-
+import colors
 import utility
 import export
 
@@ -31,16 +29,6 @@ def get_args():
     arg.add_argument("--vte", action="store_true",
                      help="Fix text-artifacts printed in VTE terminals.")
 
-    arg.add_argument("--saturate", metavar="0.0-1.0",
-                     help="Set the color saturation.")
-
-    arg.add_argument("--backend", metavar="backend",
-                     choices=["colorz", "colorthief", "schemer2",
-                              "wal", "haishoku", "list_backends"],
-                     help="Which color backend to use. \
-                           Use 'skinit --backend' to list backends.",
-                     const="list_backends", type=str, nargs="?")
-
     arg.add_argument("-s", action="store_true",
                      help="Also set the splash (login) screen wallpaper.")
 
@@ -49,6 +37,9 @@ def get_args():
 
     arg.add_argument("-r", metavar="[name of theme]",
                      help="Switch Plasma theme")
+
+    arg.add_argument("--preview", action="store_true",
+                     help="Display the current color scheme.")
 
     return arg
 
@@ -61,15 +52,8 @@ def parse_args_exit(parser):
         parser.print_help()
         sys.exit(1)
 
-    if not args.i and \
-       not args.backend:
-        parser.error("No input specified.\n"
-                     "--backend or -i is required.")
-        sys.exit(0)
-
-    if args.backend == "list_backends":
-        print("\n - ".join(["\033[1;32mBackends\033[0m:",
-                            *colors.list_backends()]))
+    if args.preview:
+        colors.palette()
         sys.exit(0)
 
 
@@ -78,9 +62,7 @@ def parse_args(parser):
     args = parser.parse_args()
 
     if args.i:
-        img = image.get(args.i, "false", "false")
-        colors_plain = colors.get(img, args.l, args.backend,
-                                  sat=args.saturate)
+        img = utility.get_image(args.i)
         export.export_wallpaper(img, args.s)
 
     if sys.stdout.isatty():
@@ -93,6 +75,9 @@ def parse_args(parser):
     if args.r:
         utility.update_theme(args.r)
         logging.info("Switching theme to %s.", args.r)
+
+    json_colors = colors.gen_colors(args.i, args.l)
+    export.send(json_colors, to_send=not args.s, vte_fix=args.vte)
 
 
 def main():
