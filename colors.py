@@ -37,8 +37,7 @@ def gen_colors(img, light):
     if hex_colors:
         logging.info("Generation complete.")
         export.make_theme_files(img, hex_colors)
-        json_colors = colors_to_json(img, hex_colors)
-        return json_colors
+        return colors_to_json(img, hex_colors)
     else:
         logging.error('Something went wrong')
         sys.exit(0)
