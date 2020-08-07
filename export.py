@@ -6,6 +6,7 @@ import logging
 import os
 
 import utility
+import color_functions
 
 
 def make_theme_files(img, color):
@@ -22,7 +23,6 @@ def make_theme_files(img, color):
     """
     os.chdir("templates")
     for file in glob.glob("*.skinit"):
-        print(file)
         with open(file, 'r') as _input:
             lines = _input.readlines()
             _output = lines[0].rstrip('\n')
@@ -40,6 +40,7 @@ def make_theme_files(img, color):
             utility.open_write(line, _output)
         else:
             print("%s does not equal hex" % color_type)
+
 
 def export_wallpaper(img, splash):
     """change desktop and login screen wallpaper"""
@@ -83,22 +84,21 @@ def set_color(index, color):
     """Convert a hex color to a text color sequence."""
     if utility.OS == "Darwin" and index < 20:
         return "\033]P%1x%s\033\\" % (index, color.strip("#"))
-
     return "\033]4;%s;%s\033\\" % (index, color)
 
 
-#    def set_iterm_tab_color(color):
-#   """Set iTerm2 tab/window color"""
-#   return ("\033]6;1;bg;red;brightness;%s\a"
-#            "\033]6;1;bg;green;brightness;%s\a"
-#            "\033]6;1;bg;blue;brightness;%s\a") % (*utility.hex_to_rgb(color),)
+def set_iterm_tab_color(color):
+    """Set iTerm2 tab/window color"""
+    rgb_color = color_functions.Color(color)
+    return ("\033]6;1;bg;red;brightness;%s\a"
+            "\033]6;1;bg;green;brightness;%s\a"
+            "\033]6;1;bg;blue;brightness;%s\a") % rgb_color.rgb_string
 
 
 def create_sequences(colors, vte_fix=False):
     """Create the escape sequences."""
-
     # Colors 0-15.
-    sequences = [set_color(index, colors["colors"]["color%s" % index])
+    sequences = [set_color(index, colors[index])
                  for index in range(16)]
 
     # Special colors.
@@ -106,27 +106,28 @@ def create_sequences(colors, vte_fix=False):
     # 10 = foreground, 11 = background, 12 = cursor foregound
     # 13 = mouse foreground, 708 = background border color.
     sequences.extend([
-        set_special(10, colors["special"]["foreground"], "g"),
-        set_special(11, colors["special"]["background"], "h"),
-        set_special(12, colors["special"]["cursor"], "l"),
-        set_special(13, colors["special"]["foreground"], "j"),
-        set_special(17, colors["special"]["foreground"], "k"),
-        set_special(19, colors["special"]["background"], "m"),
-        set_color(232, colors["special"]["background"]),
-        set_color(256, colors["special"]["foreground"]),
-        set_color(257, colors["special"]["background"]),
+        set_special(10, colors[7], "g"),
+        set_special(11, colors[0], "h"),
+        set_special(12, colors[7], "l"),
+        set_special(13, colors[7], "j"),
+        set_special(17, colors[7], "k"),
+        set_special(19, colors[0], "m"),
+        set_color(232, colors[0]),
+        set_color(256, colors[7]),
+        set_color(257, colors[0]),
     ])
 
     if not vte_fix:
         sequences.extend(
-            set_special(708, colors["special"]["background"], "")
+            set_special(708, colors[0], "")
         )
-#    if utility.OS == "Darwin":
-#       sequences += set_iterm_tab_color(colors["special"]["background"])
+    if utility.OS == "Darwin":
+        sequences += set_iterm_tab_color(colors[0])
     return "".join(sequences)
 
 
 def send(colors, to_send=True, vte_fix=False):
+    color_functions.palette()
     """Send colors to all open terminals."""
     sequences = create_sequences(colors, vte_fix)
 

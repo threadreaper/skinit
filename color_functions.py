@@ -17,22 +17,23 @@ def palette():
             i = "8;5;%s" % i
 
         print("\033[4%sm%s\033[0m" % (i, " " * (80 // 20)), end="")
-
     print("\n")
+
+
+class Color:
+    def __init__(self, hex_color):
+        self.hex_string = str(hex_color)
+        self.rgb_string = self.rgb()
+
+    def rgb(self):
+        value = self.hex_string.lstrip('#')
+        (r, g, b) = [(value[i:i + 2]) for i in range(0, len(value), 2)]
+        (r, g, b) = [i.encode(encoding='utf_8') for i in (r, g, b)]
+        return int(r, 16), int(g, 16), int(b, 16)
 
 
 def get(img):
     """Use colorz to generate color objects"""
-    class Color:
-        def __init__(self, hex_color):
-            self.hex_string = str(hex_color)
-
-        def rgb(self):
-            value = self.hex_string.lstrip('#')
-            (r, g, b) = [(value[i:i + 2]) for i in range(0, len(value), 2)]
-            (r, g, b) = [i.encode(encoding='utf_8') for i in (r, g, b)]
-            return int(r, 16), int(g, 16), int(b, 16)
-
     flags = ["-n 16", "--no-preview"]
     colors = list()
     color = list()
@@ -76,6 +77,6 @@ def to_json(wallpaper, colors):
             "color12": colors[12].hex_string,
             "color13": colors[13].hex_string,
             "color14": colors[14].hex_string,
-            "color15": colors[15].hex_string,
+            "color15": colors[15].hex_string
         }
     }

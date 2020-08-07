@@ -65,9 +65,11 @@ def parse_args(parser):
         img = utility.get_image(args.i)
         export.export_wallpaper(img, args.s)
         colors = color_functions.get(args.i)
-        json_colors = color_functions.to_json(img, colors)
-        export.send(json_colors, to_send=not args.s, vte_fix=args.vte)
         export.make_theme_files(img, colors)
+        term_colors = {}
+        for i in range(len(colors)):
+            term_colors.__setitem__(int(i),colors[i].hex_string)
+        export.send(term_colors, to_send=not args.s, vte_fix=args.vte)
 
     if sys.stdout.isatty():
         color_functions.palette()
