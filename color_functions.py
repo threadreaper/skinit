@@ -46,8 +46,8 @@ class Color:
 def get(img):
     """Use colorz to generate color objects"""
     flags = ["-n 16", "--no-preview"]
-    colors = list()
-    color = list()
+    colors = []
+    color = []
     error = None
     if shutil.which("colorz"):
         try:
