@@ -5,9 +5,8 @@ import subprocess
 import logging
 import sys
 import os
-import json
 import platform
-import colors
+
 
 OS = platform.uname()[0]
 
@@ -23,7 +22,6 @@ def open_write(_data, _output):
 
 
 def substitute(input_file, output_file, **data):
-    """read in a file, replace some data and write it back out"""
     filedata = open_read(input_file)
     for key, value in data.items():
         filedata = filedata.replace(key, value)
@@ -35,11 +33,13 @@ def create_dir(directory):
     os.makedirs(directory, exist_ok=True)
 
 
+"""deprecated
 def save_file_json(img, _colors, export_file):
-    """Write a file out as .json data"""
-    json_colors = colors.colors_to_json(img, _colors)
+
+    json_colors = color_functions.to_json(img, _colors)
     with open(export_file, "w") as file:
         json.dump(json_colors, file, indent=4)
+"""
 
 
 def link_file(file, link):

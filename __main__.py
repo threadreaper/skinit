@@ -10,7 +10,7 @@ import sys
 import logging
 import os
 
-import colors
+import color_functions
 import utility
 import export
 
@@ -53,7 +53,7 @@ def parse_args_exit(parser):
         sys.exit(1)
 
     if args.preview:
-        colors.palette()
+        color_functions.palette()
         sys.exit(0)
 
 
@@ -64,9 +64,13 @@ def parse_args(parser):
     if args.i:
         img = utility.get_image(args.i)
         export.export_wallpaper(img, args.s)
+        colors = color_functions.get(args.i)
+        json_colors = color_functions.to_json(img, colors)
+        export.send(json_colors, to_send=not args.s, vte_fix=args.vte)
+        export.make_theme_files(img, colors)
 
     if sys.stdout.isatty():
-        colors.palette()
+        color_functions.palette()
 
     if args.q:
         logging.getLogger().disabled = True
@@ -75,9 +79,6 @@ def parse_args(parser):
     if args.r:
         utility.update_theme(args.r)
         logging.info("Switching theme to %s.", args.r)
-
-    json_colors = colors.gen_colors(args.i, args.l)
-    export.send(json_colors, to_send=not args.s, vte_fix=args.vte)
 
 
 def main():

@@ -8,10 +8,38 @@ import os
 import utility
 
 
-def make_theme_files(img, colors):
-    utility.save_file_json(img, colors, "templates/colors.json")
-    utility.open_write(colors, "templates/colors")
-
+def make_theme_files(img, color):
+    """ Generates a config file of some type based on a template
+    found in the templates folder.  Gets important info
+    from the first two lines of the .skinit file:
+       1) Full destination path and filename
+       2) Type of color code required
+    In this way, support is provided for users to apply
+    themes to any application that loads any sort of
+    color configuration from text-based config files by
+    creating their own compatible template and telling
+    SkinIt where to copy it out to.
+    """
+    os.chdir("templates")
+    for file in glob.glob("*.skinit"):
+        print(file)
+        with open(file, 'r') as _input:
+            lines = _input.readlines()
+            _output = lines[0].rstrip('\n')
+            color_type = lines[1].rstrip('\n')
+            theme_data = {'[wallpaper]': img}
+        if color_type == 'hex':
+            for i in range(len(color)):
+                theme_data = {**theme_data, ('[color%s]' % i): color[i].hex_string}
+            offset = len(lines[0]) + len(lines[1])
+            with open(file, 'r') as _input:
+                _input.seek(offset)
+                line = _input.read()
+            for key, value in theme_data.items():
+                line = line.replace(key, value)
+            utility.open_write(line, _output)
+        else:
+            print("%s does not equal hex" % color_type)
 
 def export_wallpaper(img, splash):
     """change desktop and login screen wallpaper"""
@@ -110,4 +138,4 @@ def send(colors, to_send=True, vte_fix=False):
             tty_pattern = "/dev/pts/[0-9]*"
         for term in glob.glob(tty_pattern):
             utility.open_write(sequences, term)
-            logging.info("Set terminal colors.")
+        logging.info("Set terminal colors.")
