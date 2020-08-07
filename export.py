@@ -43,9 +43,9 @@ def make_theme_files(img, color):
 
 def export_wallpaper(img, splash):
     """change desktop and login screen wallpaper"""
-    file_name = str(os.path.split(img))
-
     if splash:
+        file_name = str(os.path.split(img))
+
         link = "./look-and-feel/skinit/contents/splash/images/" + file_name
         utility.link_file(img, link)
 
