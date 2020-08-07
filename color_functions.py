@@ -21,15 +21,26 @@ def palette():
 
 
 class Color:
+    """Class for colors, exposes methods for retrieving colors
+       in various formats"""
     def __init__(self, hex_color):
         self.hex_string = str(hex_color)
         self.rgb_string = self.rgb()
 
     def rgb(self):
+        """given a hex color code, returns an rgb code"""
         value = self.hex_string.lstrip('#')
-        (r, g, b) = [(value[i:i + 2]) for i in range(0, len(value), 2)]
-        (r, g, b) = [i.encode(encoding='utf_8') for i in (r, g, b)]
-        return int(r, 16), int(g, 16), int(b, 16)
+        (red, green, blue) = [(value[i:i + 2]) for i in
+                              range(0, len(value), 2)]
+        (red, green, blue) = [i.encode(encoding='utf_8')
+                              for i in (red, green, blue)]
+        return int(red, 16), int(green, 16), int(blue, 16)
+
+    def hsv(self):
+        """TODO: return hsv color code given hex"""
+        red, green, blue = self.rgb_string
+        red, green, blue = int(red)/255, int(green)/255, int(blue)/255
+        return red, green, blue
 
 
 def get(img):
@@ -37,46 +48,19 @@ def get(img):
     flags = ["-n 16", "--no-preview"]
     colors = list()
     color = list()
+    error = None
     if shutil.which("colorz"):
         try:
-            out = subprocess.check_output(("colorz", img, *flags)).decode('ascii')
-            colors[0:15] = [line[0:7] for line in (out.splitlines())]
+            out = subprocess.check_output(("colorz", img, *flags))\
+                                          .decode('ascii')
+            colors[0:15] = [line[0:7] for line in out.splitlines()]
             color[0:7] = [Color(colors[i]) for i in range(len(colors))]
         except subprocess.CalledProcessError:
+            error = True
             logging.error("colorz returned non-zero exit status."
                           "\n Bad image file or not enough colors?")
+            sys.exit(1)
         finally:
-            return color
-    else:
-        logging.error("colorz wasn't found on your system.")
-        sys.exit(1)
-
-
-def to_json(wallpaper, colors):
-    return {
-        "wallpaper": wallpaper,
-
-        "special": {
-            "background": colors[0].hex_string,
-            "foreground": colors[7].hex_string,
-            "cursor": colors[7].hex_string,
-        },
-        "colors": {
-            "color0": colors[0].hex_string,
-            "color1": colors[1].hex_string,
-            "color2": colors[2].hex_string,
-            "color3": colors[3].hex_string,
-            "color4": colors[4].hex_string,
-            "color5": colors[5].hex_string,
-            "color6": colors[6].hex_string,
-            "color7": colors[7].hex_string,
-            "color8": colors[8].hex_string,
-            "color9": colors[9].hex_string,
-            "color10": colors[10].hex_string,
-            "color11": colors[11].hex_string,
-            "color12": colors[12].hex_string,
-            "color13": colors[13].hex_string,
-            "color14": colors[14].hex_string,
-            "color15": colors[15].hex_string
-        }
-    }
+            if error:
+                sys.exit(1)
+    return color

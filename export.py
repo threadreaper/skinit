@@ -29,8 +29,9 @@ def make_theme_files(img, color):
             color_type = lines[1].rstrip('\n')
             theme_data = {'[wallpaper]': img}
         if color_type == 'hex':
-            for i in range(len(color)):
-                theme_data = {**theme_data, ('[color%s]' % i): color[i].hex_string}
+            for i in range(16):
+                theme_data = {**theme_data, ('[color%s]' % i):
+                              color[i].hex_string}
             offset = len(lines[0]) + len(lines[1])
             with open(file, 'r') as _input:
                 _input.seek(offset)
@@ -73,11 +74,9 @@ def set_special(index, color, iterm_name="h", alpha=100):
     """Convert a hex color to a special sequence."""
     if utility.OS == "Darwin" and iterm_name:
         return "\033]P%s%s\033\\" % (iterm_name, color.strip("#"))
-
     if index in [11, 708] and alpha != "100":
         return "\033]%s;[%s]%s\033\\" % (index, alpha, color)
-    else:
-        return "\033]%s;%s\033\\" % (index, color)
+    return "\033]%s;%s\033\\" % (index, color)
 
 
 def set_color(index, color):
@@ -127,8 +126,8 @@ def create_sequences(colors, vte_fix=False):
 
 
 def send(colors, to_send=True, vte_fix=False):
-    color_functions.palette()
     """Send colors to all open terminals."""
+    color_functions.palette()
     sequences = create_sequences(colors, vte_fix)
 
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.

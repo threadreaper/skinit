@@ -67,8 +67,8 @@ def parse_args(parser):
         colors = color_functions.get(args.i)
         export.make_theme_files(img, colors)
         term_colors = {}
-        for i in range(len(colors)):
-            term_colors.__setitem__(int(i),colors[i].hex_string)
+        for i in range(16):
+            term_colors.__setitem__(int(i), colors[i].hex_string)
         export.send(term_colors, to_send=not args.s, vte_fix=args.vte)
 
     if sys.stdout.isatty():

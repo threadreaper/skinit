@@ -1,16 +1,18 @@
+"""WIP gui interface for SkinIt"""
+import sys
+from pathlib import Path
 
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QFrame,
                              QAction, QFileDialog, QApplication)
-from PyQt5.QtGui import QIcon, QPixmap
-import sys
-from pathlib import Path
+from PyQt5.QtGui import QPixmap
 
 import color_functions
 
 
 class Example(QMainWindow):
-
+    """Window class"""
     def __init__(self):
+        """initialize window - assign attribs, attach objects, etc"""
         super().__init__()
 
         self.img_path = QLabel(self)
@@ -21,13 +23,11 @@ class Example(QMainWindow):
 
         self.init_ui()
 
-    def exit_app(self):
-        self.close()
-
     def init_ui(self):
+        """initialize window ui"""
         self.label.setGeometry(0, 100, 800, 500)
 
-        _quit = QAction(QIcon('open.png'), 'Quit', self)
+        _quit = QAction('Quit', self)
         _quit.setStatusTip('Close the application')
         _quit.triggered.connect(QApplication.instance().quit)
 
@@ -54,14 +54,15 @@ class Example(QMainWindow):
             self.color.append("#000000")
             self.frame.append(QFrame(self))
             self.frame[i].setGeometry(i*40-30, 70, 30, 30)
-            self.frame[i].setStyleSheet(("QWidget { background-color: %s }" % self.color[i]))
+            self.frame[i].setStyleSheet(("QWidget { background-color: "
+                                         "%s }" % self.color[i]))
 
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle('File dialog')
         self.show()
 
     def show_dialog(self):
-
+        """open a file browser dialog window"""
         home_dir = str(Path.home())
         fname = QFileDialog.getOpenFileName(self, 'Open file', home_dir)
 
@@ -72,10 +73,12 @@ class Example(QMainWindow):
             pixmap2 = pixmap.scaledToWidth(800)
             self.label.setPixmap(pixmap2)
             for i in range(len(self.color)):
-                self.frame[i].setStyleSheet(("QWidget { background-color: %s }" % self.color[i].hex_string))
+                self.frame[i].setStyleSheet(("QWidget { background-color: %s }"
+                                             % self.color[i].hex_string))
 
 
 def main():
+    """main application loop"""
     app = QApplication(sys.argv)
     ex = Example()
     ex.statusBar()
