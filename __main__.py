@@ -53,7 +53,7 @@ def parse_args_exit(parser):
         sys.exit(1)
 
     if args.preview:
-        color_functions.palette()
+        color_functions._palette()
         sys.exit(0)
 
 

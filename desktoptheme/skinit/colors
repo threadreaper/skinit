@@ -1,6 +1,6 @@
 [Colors:Button]
 BackgroundAlternate=218,221,215
-BackgroundNormal=218,221,215
+BackgroundNormal=80,100,0
 DecorationFocus=239,132,65
 DecorationHover=72,177,60
 ForegroundActive=255,0,0

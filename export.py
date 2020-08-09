@@ -39,8 +39,18 @@ def make_theme_files(img, colors):
             for key, value in theme_data.items():
                 line = line.replace(key, value)
             utility.open_write(line, _output)
-        else:
-            print("%s does not equal hex" % color_type)
+        elif color_type == 'rgb':
+            for i, color in enumerate(colors):
+                theme_data = {**theme_data, ('[color%s]' % i):
+                              str(color.rgb_value)}
+            offset = len(lines[0]) + len(lines[1])
+            with open(file, 'r') as _input:
+                _input.seek(offset)
+                line = _input.read()
+            for key, value in theme_data.items():
+                line = line.replace(key, value)
+            utility.open_write(line, _output)
+
 
 
 def export_wallpaper(img, splash):
@@ -127,7 +137,7 @@ def create_sequences(colors, vte_fix=False):
 
 def send(colors, to_send=True, vte_fix=False):
     """Send colors to all open terminals."""
-    color_functions.palette()
+    color_functions._palette()
     sequences = create_sequences(colors, vte_fix)
 
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.
