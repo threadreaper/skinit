@@ -52,7 +52,6 @@ def make_theme_files(img, colors):
             utility.open_write(line, _output)
 
 
-
 def export_wallpaper(img, splash):
     """change desktop and login screen wallpaper"""
     if splash:
@@ -137,7 +136,7 @@ def create_sequences(colors, vte_fix=False):
 
 def send(colors, to_send=True, vte_fix=False):
     """Send colors to all open terminals."""
-    color_functions._palette()
+    color_functions.palette()
     sequences = create_sequences(colors, vte_fix)
 
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.

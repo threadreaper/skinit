@@ -14,7 +14,7 @@ import sys
 from math import sqrt
 
 
-def _palette():
+def palette():
     """Generate a preview palette to be displayed in the terminal."""
     for i in range(16):
         if i % 8 == 0:

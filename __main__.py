@@ -53,7 +53,7 @@ def parse_args_exit(parser):
         sys.exit(1)
 
     if args.preview:
-        color_functions._palette()
+        color_functions.palette()
         sys.exit(0)
 
 
@@ -71,13 +71,12 @@ def parse_args(parser):
             term_colors.__setitem__(int(i), color.hex_value)
         export.send(term_colors, to_send=not args.s, vte_fix=args.vte)
 
-
     if args.q:
         logging.getLogger().disabled = True
         sys.stdout = sys.stderr = open(os.devnull, 'w')
 
     if args.r:
-        utility.update_theme(args.r)
+        export.update_theme(args.r)
         logging.info("Switching theme to %s.", args.r)
 
 
