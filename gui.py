@@ -74,7 +74,7 @@ class Example(QMainWindow):
             self.label.setPixmap(pixmap2)
             for i in range(len(self.color)):
                 self.frame[i].setStyleSheet(("QWidget { background-color: %s }"
-                                             % self.color[i].hex_string))
+                                             % self.color[i].hex_value))
 
 
 def main():

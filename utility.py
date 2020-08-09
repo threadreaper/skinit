@@ -68,12 +68,6 @@ def setup_logging():
     logging.addLevelName(logging.WARNING, '\033[1;33mWARNING')
 
 
-def update_theme(theme):
-    """reload the plasma theme"""
-    disown(["qdbus", "org.kde.kuiserver", "/PlasmaShell",
-            "loadLookAndFeelDefaultLayout", theme])
-
-
 def get_image(img):
     """Validate image input."""
     if os.path.isfile(img):

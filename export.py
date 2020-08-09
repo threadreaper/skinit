@@ -9,7 +9,7 @@ import utility
 import color_functions
 
 
-def make_theme_files(img, color):
+def make_theme_files(img, colors):
     """ Generates a config file of some type based on a template
     found in the templates folder.  Gets important info
     from the first two lines of the .skinit file:
@@ -29,9 +29,9 @@ def make_theme_files(img, color):
             color_type = lines[1].rstrip('\n')
             theme_data = {'[wallpaper]': img}
         if color_type == 'hex':
-            for i in range(16):
+            for i, color in enumerate(colors):
                 theme_data = {**theme_data, ('[color%s]' % i):
-                              color[i].hex_string}
+                              color.hex_value}
             offset = len(lines[0]) + len(lines[1])
             with open(file, 'r') as _input:
                 _input.seek(offset)
@@ -91,7 +91,7 @@ def set_iterm_tab_color(color):
     rgb_color = color_functions.Color(color)
     return ("\033]6;1;bg;red;brightness;%s\a"
             "\033]6;1;bg;green;brightness;%s\a"
-            "\033]6;1;bg;blue;brightness;%s\a") % rgb_color.rgb_string
+            "\033]6;1;bg;blue;brightness;%s\a") % rgb_color.rgb()
 
 
 def create_sequences(colors, vte_fix=False):
@@ -139,3 +139,10 @@ def send(colors, to_send=True, vte_fix=False):
         for term in glob.glob(tty_pattern):
             utility.open_write(sequences, term)
         logging.info("Set terminal colors.")
+
+
+def update_theme(theme):
+    """reload the plasma theme - from cli lookandfeeltool &
+    lookandfeeltool --platformtheme"""
+    utility.disown(["qdbus", "org.kde.kuiserver", "/PlasmaShell",
+                    "loadLookAndFeelDefaultLayout", theme])
