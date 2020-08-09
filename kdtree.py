@@ -13,11 +13,11 @@ from dataclasses import dataclass
 
 def square_distance(point_a, point_b):
     """ squared euclidean distance """
-    distance = 0
     dimensions = len(point_a)  # assumes both points have the same dimensions
-    for dimension in range(dimensions):
-        distance += (point_a[dimension] - point_b[dimension]) ** 2
-    return distance
+    return sum(
+        (point_a[dimension] - point_b[dimension]) ** 2
+        for dimension in range(dimensions)
+    )
 
 
 @dataclass
@@ -93,8 +93,7 @@ class KDTree:
     @staticmethod
     def construct_from_data(data):
         """ let's build a differnt kind of tree! """
-        tree = KDTree(data)
-        return tree
+        return KDTree(data)
 
     def query(self, query_point, neighbors=1):
         """ raise your hand if you have a question"""
@@ -104,10 +103,9 @@ class KDTree:
             if node is None:
                 return
 
-            if node.left is None:
-                if node.right is None:
-                    best_neighbours.add(node.point)
-                    return
+            if node.left is None and node.right is None:
+                best_neighbours.add(node.point)
+                return
             # this node is no leaf
             # select dimension for comparison (based on current depth)
             axis = depth % len(kd_query_point)
