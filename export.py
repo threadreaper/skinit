@@ -2,10 +2,12 @@
 This script handles all of the output, wallpaper, theme files, etc.
 """
 import glob
-from os import chdir, path
+import os
+import subprocess
+import logging
 
 from utility import open_write, link_file, substitute,\
-    plasma_shell, notifications, OS
+    plasma_shell, notifications, OS, disown
 from color_functions import palette, Color
 
 
@@ -21,7 +23,7 @@ def make_theme_files(img, colors):
     creating their own compatible template and telling
     SkinIt where to copy it out to.
     """
-    chdir("templates")
+    os.chdir("templates")
     for file in glob.glob("*.skinit"):
         with open(file, 'r') as _input:
             lines = _input.readlines()
@@ -50,12 +52,13 @@ def make_theme_files(img, colors):
             for key, value in theme_data.items():
                 line = line.replace(key, value)
             open_write(line, _output)
+    update_theme('SkinIt')
 
 
 def export_wallpaper(img, splash):
     """change desktop and login screen wallpaper"""
     if splash:
-        file_name = str(path.split(img))
+        file_name = str(os.path.split(img))
 
         link = "./look-and-feel/skinit/contents/splash/images/" + file_name
         link_file(img, link)
@@ -148,5 +151,20 @@ def update_theme(theme):
     lookandfeeltool --platformtheme  also .config/plasmarc
     rm .cache/plasma* -R to clear plasma cache and
     plasmashell --replace
-    store in /.local/share/plasma/desktoptheme/"""
-    plasma_shell.loadLookAndFeelDefaultLayout(theme)
+    store in /.local/share/plasma/desktoptheme/
+    TODO: loadlookandfeel resets our wallpaper!!  figure that out"""
+    home = os.environ['HOME']
+
+    try:
+        disown('rm %s/.cache/plasma* -R' % home)
+    except subprocess.CalledProcessError as e:
+        if 'FileNotFoundError' in e.output:
+            logging.info('Nothing to delete in Plasma cache... bypassing')
+    finally:
+        try:
+            disown('plasmashell --replace')
+        except subprocess.CalledProcessError as e:
+            if 'FileNotFoundError' in e.output:
+                logging.info('No plasma shell to restart, do you have Plasma installed?')
+        finally:
+            return()

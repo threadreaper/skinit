@@ -84,32 +84,29 @@ def _take_out(item, item_list):
 
 
 def closest_color(rgb, colors):
-    """given a single rgb tuple and a list of rgb tuples as arguments,
+    """given a single rgb tuple and a list of Color objects as arguments,
     returns the color in the list closest to the specified color"""
     r, g, b = rgb
     color_diffs = []
     for color in colors:
-        r_prime, g_prime, b_prime = color
-        color_diff = sqrt(abs(r - r_prime)**2 + abs(g - g_prime)**2
-                          + abs(b - b_prime)**2)
+        r_prime, g_prime, b_prime = color.rgb_value
+        color_diff = sqrt(abs(r - r_prime) ** 2 + abs(g - g_prime) ** 2
+                          + abs(b - b_prime) ** 2)
         color_diffs.append((color_diff, color))
     return min(color_diffs)[1]
 
 
-def sort_colors(rgb, colors):
-    """given a single rgb tuple and a list of rgb tuples as arguments:
+def sort_colors(color, colors):
+    """given a single Color object and a list of Color objects:
     attempts to sort colors in 'order' starting with the color given
     in the first argument -- not perfect"""
-
-    sorted_colors = []
-    sorted_colors.insert(0, rgb)
+    _sorted = []
+    _sorted.insert(0, color)
     x = len(colors)
-    for i in range(len(colors)):
-        if i < x:
-            sorted_colors.insert(i+1, (closest_color(sorted_colors[0],
-                                                     colors)))
-            colors = _take_out(sorted_colors[i + 1], colors)
-    return sorted_colors
+    for i in range(x):
+        _sorted.insert(i+1, closest_color(_sorted[i].rgb(), colors))
+        colors = _take_out(_sorted[i+1], colors)
+    return _sorted
 
 
 def get(img):
@@ -139,4 +136,10 @@ def get(img):
                       "selected image file.")
         sys.exit(1)
 
+    bg_color, fg_color = [closest_color(x, colors) for x in
+                          ((0, 0, 0), (255, 255, 255))]
+    for x in (bg_color, fg_color):
+        colors = _take_out(x, colors)
+    colors = sort_colors(bg_color, colors)
+    colors.insert(7, fg_color)
     return colors
