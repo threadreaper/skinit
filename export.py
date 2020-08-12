@@ -146,7 +146,7 @@ def send(colors, to_send=True, vte_fix=False, quiet=False):
 def update_theme(theme):
     """reload the plasma theme - from cli lookandfeeltool &
     lookandfeeltool --platformtheme  also .config/plasmarc
-    rm .cache/plasma -R to clear plasma cache and
+    rm .cache/plasma* -R to clear plasma cache and
     plasmashell --replace
-    store in /share/plasma/desktoptheme/"""
+    store in /.local/share/plasma/desktoptheme/"""
     plasma_shell.loadLookAndFeelDefaultLayout(theme)
