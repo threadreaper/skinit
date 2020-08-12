@@ -14,8 +14,9 @@ import sys
 from math import sqrt
 
 
-def palette(colors):
-    """Generate a preview palette to be displayed in the terminal."""
+def palette():
+    """Generate a preview palette to be displayed in the terminal.
+    Expects a list of 16 Color objects as input"""
     for i in range(16):
         if i % 8 == 0:
             print()
@@ -24,18 +25,11 @@ def palette(colors):
         print("\033[4%sm%s\033[0m" % (i, " " * (80 // 20)), end="")
     print("\n")
 
-    for i, color in enumerate(colors):
-        r, g, b = color.rgb()
-        if i % 8 == 0:
-            print()
-        print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
-    print()
-
 
 class Color:
     """Class for colors creating color objects, exposes methods for
        retrieving colors in various formats.  Take a color in hex
-       string format as its only argument."""
+       string format as its argument."""
 
     def __init__(self, hex_color):
         self.hex_value = str(hex_color)
@@ -70,18 +64,16 @@ class Color:
             float("{:.2f}".format(val))
 
     def shade(self, amt):
-        """lighten/darken a color by the amount passed to the method
-        expects a hex color code such as #FFFFFF as input, and a
-        positive or negative integer amount to shift"""
-        r, g, b = self.rgb_value
-        r, g, b = r + amt, g + amt, b + amt
-        r, g, b = [0 if color < 0 else 255 if color > 255 else color
-                   for color in (r, g, b)]
-        return r, g, b
+        """lighten/darken a color by a positive or negative
+        integer amount"""
+        r, g, b = self.rgb_value + amt
+        r, g, b = [0 if x < 0 else 255 if x > 255 else x for x in (r, g, b)]
+        r, g, b = [(''.join("{:02x}".format(x))) for x in (r, g, b)]
+        return '#%s%s%s' % (r, g, b)
 
 
 def _take_out(item, item_list):
-    """the first argument is a list member, second is the list
+    """the first argument is a list member, second is the list.
     function will remove the selected item from the list without
     needing to know its index"""
     for i, x in enumerate(item_list):
@@ -120,12 +112,6 @@ def sort_colors(rgb, colors):
     return sorted_colors
 
 
-def rgb_to_hex(rgb):
-    """given an rgb tuple color code, returns equivalent hex code"""
-    r, g, b = [(''.join("{:02x}".format(x))) for x in rgb]
-    return '#%s%s%s' % (r, g, b)
-
-
 def get(img):
     """Use colorz to generate color objects and sort them before returning"""
     flags = ["-n 8", "--no-preview"]
@@ -138,7 +124,7 @@ def get(img):
             colors = []
             for line in out.splitlines():
                 colors.append(Color(line[0:7]))
-                colors.append(Color(line[9:15]))
+                colors.append(Color(line[8:15]))
         except subprocess.CalledProcessError:
             error = True
             logging.error("colorz returned non-zero exit status."
@@ -153,12 +139,4 @@ def get(img):
                       "selected image file.")
         sys.exit(1)
 
-    """colors = [x.rgb_value for x in colors]
-    bgcolor = closest_color((0, 0, 0), colors)
-    fgcolor = closest_color((255, 255, 255), colors)
-    colors = _take_out(fgcolor, colors)
-    colors = sort_colors(bgcolor, colors)
-    colors.insert(7, fgcolor)"""
-
-    # colors = [Color(rgb_to_hex(color)) for color in colors]
     return colors

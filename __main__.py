@@ -32,6 +32,9 @@ def get_args():
     arg.add_argument("-s", action="store_true",
                      help="Also set the splash (login) screen wallpaper.")
 
+    arg.add_argument("-p", action="store_true",
+                     help="Display a preview of the current color scheme.")
+
     arg.add_argument("-q", action="store_true",
                      help="Quiet mode, don't output anything to the terminal.")
 
@@ -49,6 +52,19 @@ def parse_args_exit(parser):
         parser.print_help()
         sys.exit(1)
 
+    if args.p and args.q:
+        logging.error("-p and -q are incompatible.")
+        parser.print_help()
+        sys.exit(1)
+
+    if args.p:
+        color_functions.palette()
+        sys.exit(0)
+
+    if args.r:
+        export.update_theme(args.r)
+        logging.info("Switching theme to %s.", args.r)
+
 
 def parse_args(parser):
     """Process args"""
@@ -59,15 +75,11 @@ def parse_args(parser):
         export.export_wallpaper(img, args.s)
         colors = color_functions.get(args.i)
         export.make_theme_files(img, colors)
-        export.send(colors, to_send=not args.s, vte_fix=args.vte)
+        export.send(colors, to_send=not args.s, vte_fix=args.vte, quiet=args.q)
 
     if args.q:
         logging.getLogger().disabled = True
         sys.stdout = sys.stderr = open(os.devnull, 'w')
-
-    if args.r:
-        export.update_theme(args.r)
-        logging.info("Switching theme to %s.", args.r)
 
 
 def main():

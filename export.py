@@ -87,10 +87,10 @@ def set_special(index, color, iterm_name="h", alpha=100):
 
 
 def set_color(index, color):
-    """Convert a hex color to a text color sequence."""
+    """Convert a hex color to a terminal color sequence."""
     if OS == "Darwin" and index < 20:
-        return "\033]P%1x%s\033\\" % (index, color.strip("#"))
-    return "\033]4;%s;%s\033\\" % (index, color)
+        return "\033]P%1x%s\033\\" % (index, color.hex_value.strip("#"))
+    return "\033]4;%s;%s;\033\\" % (index, color.hex_value)
 
 
 def set_iterm_tab_color(color):
@@ -104,8 +104,7 @@ def set_iterm_tab_color(color):
 def create_sequences(colors, vte_fix=False):
     """Create the escape sequences."""
     # Colors 0-15.
-    sequences = [set_color(index, colors[index])
-                 for index in range(16)]
+    sequences = [set_color(index, colors[index]) for index in range(16)]
 
     # Special colors.
     # Source: https://goo.gl/KcoQgP
@@ -132,14 +131,14 @@ def create_sequences(colors, vte_fix=False):
     return "".join(sequences)
 
 
-def send(colors, to_send=True, vte_fix=False):
+def send(colors, to_send=True, vte_fix=False, quiet=False):
     """Send colors to all open terminals."""
-    palette(colors)
+    if not quiet:
+        palette()
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.
     if to_send:
         tty_pattern = "/dev/ttys00[0-9]*" if OS == "Darwin" else "/dev/pts/[0-9]*"
         sequences = create_sequences(colors, vte_fix)
-
         for term in glob.glob(tty_pattern):
             open_write(sequences, term)
 
