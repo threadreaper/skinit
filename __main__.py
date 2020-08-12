@@ -38,9 +38,6 @@ def get_args():
     arg.add_argument("-r", metavar="[name of theme]",
                      help="Switch Plasma theme")
 
-    arg.add_argument("--preview", action="store_true",
-                     help="Display the current color scheme.")
-
     return arg
 
 
@@ -52,10 +49,6 @@ def parse_args_exit(parser):
         parser.print_help()
         sys.exit(1)
 
-    if args.preview:
-        color_functions.palette()
-        sys.exit(0)
-
 
 def parse_args(parser):
     """Process args"""
@@ -66,10 +59,7 @@ def parse_args(parser):
         export.export_wallpaper(img, args.s)
         colors = color_functions.get(args.i)
         export.make_theme_files(img, colors)
-        term_colors = {}
-        for i, color in enumerate(colors):
-            term_colors.__setitem__(int(i), color.hex_value)
-        export.send(term_colors, to_send=not args.s, vte_fix=args.vte)
+        export.send(colors, to_send=not args.s, vte_fix=args.vte)
 
     if args.q:
         logging.getLogger().disabled = True

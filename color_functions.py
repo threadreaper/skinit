@@ -14,7 +14,7 @@ import sys
 from math import sqrt
 
 
-def palette():
+def palette(colors):
     """Generate a preview palette to be displayed in the terminal."""
     for i in range(16):
         if i % 8 == 0:
@@ -23,6 +23,13 @@ def palette():
             i = "8;5;%s" % i
         print("\033[4%sm%s\033[0m" % (i, " " * (80 // 20)), end="")
     print("\n")
+
+    for i, color in enumerate(colors):
+        r, g, b = color.rgb()
+        if i % 8 == 0:
+            print()
+        print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
+    print()
 
 
 class Color:
@@ -45,7 +52,7 @@ class Color:
     def hsv(self):
         """returns color in hsv format"""
         r, g, b = self.rgb()
-        r, g, b = int(r) / 255, int(g) / 255, int(b) / 255
+        r, g, b = [x/255 for x in (r, g, b)]
         rgb_max, rgb_min = max(r, g, b), min(r, g, b)
         diff = rgb_max - rgb_min
         val = rgb_max * 100
@@ -63,15 +70,17 @@ class Color:
             float("{:.2f}".format(val))
 
     def shade(self, amt):
-        """lighten/darken a color by the amount passed to the method"""
-        r, g, b = self.rgb()
+        """lighten/darken a color by the amount passed to the method
+        expects a hex color code such as #FFFFFF as input, and a
+        positive or negative integer amount to shift"""
+        r, g, b = self.rgb_value
         r, g, b = r + amt, g + amt, b + amt
         r, g, b = [0 if color < 0 else 255 if color > 255 else color
                    for color in (r, g, b)]
         return r, g, b
 
 
-def take_out(item, item_list):
+def _take_out(item, item_list):
     """the first argument is a list member, second is the list
     function will remove the selected item from the list without
     needing to know its index"""
@@ -105,9 +114,9 @@ def sort_colors(rgb, colors):
     x = len(colors)
     for i in range(len(colors)):
         if i < x:
-            sorted_colors.insert(i+1, (closest_color(sorted_colors[i],
+            sorted_colors.insert(i+1, (closest_color(sorted_colors[0],
                                                      colors)))
-            colors = take_out(sorted_colors[i+1], colors)
+            colors = _take_out(sorted_colors[i + 1], colors)
     return sorted_colors
 
 
@@ -144,11 +153,12 @@ def get(img):
                       "selected image file.")
         sys.exit(1)
 
-    colors = [x.rgb_value for x in colors]
+    """colors = [x.rgb_value for x in colors]
     bgcolor = closest_color((0, 0, 0), colors)
     fgcolor = closest_color((255, 255, 255), colors)
-    colors = take_out(fgcolor, colors)
+    colors = _take_out(fgcolor, colors)
     colors = sort_colors(bgcolor, colors)
-    colors.insert(7, fgcolor)
-    colors = [Color(rgb_to_hex(color)) for color in colors]
+    colors.insert(7, fgcolor)"""
+
+    # colors = [Color(rgb_to_hex(color)) for color in colors]
     return colors

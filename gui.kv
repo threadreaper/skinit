@@ -1,0 +1,71 @@
+#:kivy 1.4
+<TheGrid>:
+    cols: 2
+    size: (dp(960), dp(540))
+    GridLayout:
+        rows: 5
+        padding: 10
+        size: (dp(480), root.height)
+        pos_hint: {'top': 1}
+        Label:
+            text_size: self.size
+            size_hint: (1, .1)
+            size: (dp(480), dp(108))
+            text: "Select a wallpaper:"
+            halign: 'left'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (.5, .1)
+            size: (dp(480), dp(108))
+            padding: 0, 5
+            pos_hint: {'center_x': .5}
+            TextInput:
+                id: 'wall_path'
+            Button:
+                id: 'browse'
+                text: 'Browse'
+                size_hint: (None, 1)
+        Label:
+            size_hint: (.5, .1)
+            size: (dp(480), dp(108))
+            text: "Color scheme:"
+        GridLayout:
+            rows: 2
+            cols: 8
+            size_hint: (1, .4)
+            Label:
+                text: '1'
+            Label:
+                text: '2'
+            Label:
+                text: '3'
+            Label:
+                text: '4'
+            Label:
+                text: '5'
+            Label:
+                text: '6'
+            Label:
+                text: '7'
+            Label:
+                text: '8'
+            Label:
+                text: '1'
+            Label:
+                text: '2'
+            Label:
+                text: '3'
+            Label:
+                text: '4'
+            Label:
+                text: '5'
+            Label:
+                text: '6'
+            Label:
+                text: '7'
+            Label:
+                text: '8'
+    Image:
+        source:('/home/michael/Downloads/wall4.jpg')
+        size: (dp(480), root.height)
+        pos_hint: {'top': 1, 'right': 1}

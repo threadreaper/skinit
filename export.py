@@ -2,11 +2,11 @@
 This script handles all of the output, wallpaper, theme files, etc.
 """
 import glob
-import logging
-import os
+from os import chdir, path
 
-import utility
-import color_functions
+from utility import open_write, link_file, substitute,\
+    plasma_shell, notifications, OS
+from color_functions import palette, Color
 
 
 def make_theme_files(img, colors):
@@ -21,7 +21,7 @@ def make_theme_files(img, colors):
     creating their own compatible template and telling
     SkinIt where to copy it out to.
     """
-    os.chdir("templates")
+    chdir("templates")
     for file in glob.glob("*.skinit"):
         with open(file, 'r') as _input:
             lines = _input.readlines()
@@ -38,7 +38,7 @@ def make_theme_files(img, colors):
                 line = _input.read()
             for key, value in theme_data.items():
                 line = line.replace(key, value)
-            utility.open_write(line, _output)
+            open_write(line, _output)
         elif color_type == 'rgb':
             for i, color in enumerate(colors):
                 theme_data = {**theme_data, ('[color%s]' % i):
@@ -49,39 +49,37 @@ def make_theme_files(img, colors):
                 line = _input.read()
             for key, value in theme_data.items():
                 line = line.replace(key, value)
-            utility.open_write(line, _output)
+            open_write(line, _output)
 
 
 def export_wallpaper(img, splash):
     """change desktop and login screen wallpaper"""
     if splash:
-        file_name = str(os.path.split(img))
+        file_name = str(path.split(img))
 
         link = "./look-and-feel/skinit/contents/splash/images/" + file_name
-        utility.link_file(img, link)
+        link_file(img, link)
 
         splash_temp = "./look-and-feel/skinit/contents/splash/Splash.template"
         splash_qml = "./look-and-feel/skinit/contents/splash/Splash.qml"
 
         data = {"replace_string": file_name}
-        utility.substitute(splash_temp, splash_qml, **data)
+        substitute(splash_temp, splash_qml, **data)
 
     else:
-        logging.info("Bypassed setting splash screen wallpaper.")
+        string = """var allDesktops = desktops();for (i=0;i<allDesktops.length;i++){
+                 d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";
+                 d.currentConfigGroup = Array("Wallpaper", "org.kde.image",
+                 "General");d.writeConfig("Image", "%s")};"""
 
-    string = """
-        var allDesktops = desktops();for (i=0;i<allDesktops.length;i++){
-        d = allDesktops[i];d.wallpaperPlugin = "org.kde.image";
-        d.currentConfigGroup = Array("Wallpaper", "org.kde.image",
-        "General");d.writeConfig("Image", "%s")};"""
-
-    utility.disown(["qdbus", "org.kde.plasmashell", "/PlasmaShell",
-                    "org.kde.PlasmaShell.evaluateScript", string % img])
+        plasma_shell.evaluateScript(string % img)
+        notifications.Notify('SkinIt!', 0, '', 'Wallpaper updated!',
+                             ('<i>%s</i>' % img), [], {}, 5000)
 
 
 def set_special(index, color, iterm_name="h", alpha=100):
     """Convert a hex color to a special sequence."""
-    if utility.OS == "Darwin" and iterm_name:
+    if OS == "Darwin" and iterm_name:
         return "\033]P%s%s\033\\" % (iterm_name, color.strip("#"))
     if index in [11, 708] and alpha != "100":
         return "\033]%s;[%s]%s\033\\" % (index, alpha, color)
@@ -90,14 +88,14 @@ def set_special(index, color, iterm_name="h", alpha=100):
 
 def set_color(index, color):
     """Convert a hex color to a text color sequence."""
-    if utility.OS == "Darwin" and index < 20:
+    if OS == "Darwin" and index < 20:
         return "\033]P%1x%s\033\\" % (index, color.strip("#"))
     return "\033]4;%s;%s\033\\" % (index, color)
 
 
 def set_iterm_tab_color(color):
     """Set iTerm2 tab/window color"""
-    rgb_color = color_functions.Color(color)
+    rgb_color = Color(color)
     return ("\033]6;1;bg;red;brightness;%s\a"
             "\033]6;1;bg;green;brightness;%s\a"
             "\033]6;1;bg;blue;brightness;%s\a") % rgb_color.rgb()
@@ -129,29 +127,27 @@ def create_sequences(colors, vte_fix=False):
         sequences.extend(
             set_special(708, colors[0], "")
         )
-    if utility.OS == "Darwin":
+    if OS == "Darwin":
         sequences += set_iterm_tab_color(colors[0])
     return "".join(sequences)
 
 
 def send(colors, to_send=True, vte_fix=False):
     """Send colors to all open terminals."""
-    color_functions.palette()
-    sequences = create_sequences(colors, vte_fix)
-
+    palette(colors)
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.
     if to_send:
-        if utility.OS == "Darwin":
-            tty_pattern = "/dev/ttys00[0-9]*"
-        else:
-            tty_pattern = "/dev/pts/[0-9]*"
+        tty_pattern = "/dev/ttys00[0-9]*" if OS == "Darwin" else "/dev/pts/[0-9]*"
+        sequences = create_sequences(colors, vte_fix)
+
         for term in glob.glob(tty_pattern):
-            utility.open_write(sequences, term)
-        logging.info("Set terminal colors.")
+            open_write(sequences, term)
 
 
 def update_theme(theme):
     """reload the plasma theme - from cli lookandfeeltool &
-    lookandfeeltool --platformtheme"""
-    utility.disown(["qdbus", "org.kde.kuiserver", "/PlasmaShell",
-                    "loadLookAndFeelDefaultLayout", theme])
+    lookandfeeltool --platformtheme  also .config/plasmarc
+    rm .cache/plasma -R to clear plasma cache and
+    plasmashell --replace
+    store in /share/plasma/desktoptheme/"""
+    plasma_shell.loadLookAndFeelDefaultLayout(theme)

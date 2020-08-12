@@ -6,7 +6,11 @@ import logging
 import sys
 import os
 import platform
+from pydbus import SessionBus
 
+bus = SessionBus()
+plasma_shell = bus.get('org.kde.plasmashell', '/PlasmaShell')
+notifications = bus.get('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
 
 OS = platform.uname()[0]
 
