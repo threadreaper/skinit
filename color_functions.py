@@ -13,6 +13,8 @@ import subprocess
 import sys
 from math import sqrt
 
+import colorsort
+
 
 def palette(*args):
     """Generate a preview palette to be displayed in the terminal.
@@ -32,6 +34,7 @@ def palette(*args):
                 print()
             print("\033[48;2;%s;%s;%sm    " % (r, g, b), end="")
         print()
+
 
 class Color:
     """Class for colors creating color objects, exposes methods for
@@ -161,23 +164,7 @@ def get(img):
                       "selected image file.")
         sys.exit(1)
 
-    bg_color, fg_color = [closest_color(x, colors) for x in
-                          ((0, 0, 0), (255, 255, 255))]
-    for x in (bg_color, fg_color):
-        colors = _take_out(x, colors)
-    colors = sort_colors(bg_color, colors)
-    colors.insert(7, fg_color)
-    """ A nearest neighbor function
-    data = {}
-    for color in colors:
-        rgb = color.rgb()
-        data.update({color.rgb_value: (closest_color(rgb, colors)).rgb()})
-    for key, val in data.items():
-        r, g, b = key
-        print(key, end="")
-        print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
-        r, g, b = val
-        print(val, end="")
-        print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
-        print()"""
+    sorted_colors = colorsort.sort_colors(colors)
+    colors = [Color(color) for color in sorted_colors]
+
     return colors

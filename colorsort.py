@@ -1,23 +1,27 @@
-from color_functions import get, _take_out
+"""Sorts a list of Color objects using a quick and dirty nearest
+neighbor type of sort.   Works by converting to CIElab colorspace
+and the Delta E method of calculating linear distance between colors
+in the 3d colorspace.
+"""
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
-from PIL import Image
+
+colors = list()
 
 
+def _take_out(item, item_list):
+    """the first argument is a list member, second is the list.
+    function will remove the selected item from the list without
+    needing to know its index"""
+    for i, x in enumerate(item_list):
+        if x == item:
+            item_list.pop(i)
+            break
+    return item_list
 
-def preview(rgb):
-    r, g, b = rgb
-    return print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
 
-
-def pp(rgb):
-    padding = 15 - len(str(rgb))
-    print('%s%s ' % (" " * padding, rgb), end="")
-    preview(rgb)
-
-
-def sc(lab, labs):
+def _sc(lab, labs):
     """given a lab color and a list of lab colors:
     attempts to sort colors in 'order' starting with the color given
     in the first argument -- not perfect"""
@@ -31,33 +35,35 @@ def sc(lab, labs):
 
 
 def closest_color(lab, labs, d=False):
+    """given a lab color and a list of lab colors:
+    returns the color from the list closest to the color
+    provided in the first argument.  unless d=True, in which
+    case it returns the list of Delta E differences"""
     color_diffs = []
-    for xx in labs:
-        color_diff = delta_e_cie2000(lab, xx)
+    for x in labs:
+        color_diff = delta_e_cie2000(lab, x)
         if color_diff != 0:
-            color_diffs.append((color_diff, xx))
+            color_diffs.append((color_diff, x))
     if d:
         return color_diffs
     return min(color_diffs)[1]
 
 
 def nearest_neighbor(labs):
+    """given a list of lab colors, returns a dictionary
+    containing each color and its nearest neighbor as
+    key => value pairs"""
     neighbors = {}
     for lab in labs:
         neighbors.update({lab: closest_color(lab, labs)})
     return neighbors
 
 
-not_done = False
-
-
 def sanity_check(lab, theoretical):
     # sourcery skip: merge-list-append, move-assign
-    """Perhaps unnecessary, and probably resource-hungry.  Experimental.
-    Before joining the neighborhood, I'll check to see if I'm closer to
+    """Before joining the neighborhood, I'll check to see if I'm closer to
     any member who's already in than another who's already in in front
     of me"""
-    index = len(theoretical)
     only_me = [lab]
     indices = []
     for neighbor in theoretical:
@@ -71,26 +77,24 @@ def sanity_check(lab, theoretical):
                 indices.append(member_index)
         if indices:
             return min(indices)
-        else:
-            return 0
+        return 0
+
 
 def check_and_sort(table):  # sourcery skip: hoist-statement-from-loop
+    """handles the sorting of all the colors in the 'neighborhood'
+    which is the dict created by the nearest_neighbor function"""
     global colors
     new_neighbors = []
     tick = 0
     for key, val in table.items():
         """If this isn't the first iteration, and neither myself nor my
-         neighbor are in, I need to make sure someone else isn't closer 
+         neighbor are in, I need to make sure someone else isn't closer
          before I go in"""
         if key not in new_neighbors and val not in new_neighbors and tick != 0:
             last_in = new_neighbors[-1]
-            remaining = [tempvar for tempvar in colors if tempvar not in new_neighbors]
+            remaining = [tempvar for tempvar in colors if
+                         tempvar not in new_neighbors]
             next_in = closest_color(last_in, remaining)
-            new_index = sanity_check(next_in, new_neighbors)
-            """
-            if new_index > 0 and next_in not in new_neighbors:
-                new_neighbors.insert(new_index, next_in)
-                print('Taking over position %s' % new_index)"""
 
             if next_in not in new_neighbors:
                 new_neighbors.append(next_in)
@@ -152,37 +156,36 @@ def check_and_sort(table):  # sourcery skip: hoist-statement-from-loop
                 new_neighbors.append(val)
         tick += 1
 
-
-    print(len(new_neighbors))
     new_neighborhood = {}
     for data in new_neighbors:
         new_neighborhood.update({data: table.get(data)})
-       # data = convert_color(data, sRGBColor)
-       # pp(data.get_upscaled_value_tuple())
-       # print()
     return new_neighborhood
 
-img = Image.open('/home/michael/Downloads/wall4.jpg')
-pixels = list(img.getdata())
-print(pixels)
-colors = get('/home/michael/Downloads/wall.jpg')
-for i in range(len(colors)):
-    red, green, blue = colors[i].rgb()
-    srgb = sRGBColor(red, green, blue, is_upscaled=True)
-    color = convert_color(srgb, LabColor)
-    colors[i] = color
 
-black = sRGBColor(0, 0, 0)
-black = convert_color(black, LabColor)
+def sort_colors(input_colors):
+    """takes a list of color objects as input and returns
+    a sorted list of colors in hex-string format"""
+    global colors
+    for input_color in input_colors:
+        red, green, blue = input_color.rgb()
+        srgb = sRGBColor(red, green, blue, is_upscaled=True)
+        color = convert_color(srgb, LabColor)
+        colors.append(color)
 
-bg_color = closest_color(black, colors)
-colors = sc(bg_color, colors)
-neighborhood = nearest_neighbor(colors)
-next_neighborhood = check_and_sort(neighborhood)
+    black = sRGBColor(0, 0, 0)
+    black = convert_color(black, LabColor)
 
-for key1, value1 in next_neighborhood.items():
-    key1 = convert_color(key1, sRGBColor)
-    pp(key1.get_upscaled_value_tuple())
-    value1 = convert_color(value1, sRGBColor)
-    pp(value1.get_upscaled_value_tuple())
-    print()
+    bg_color = closest_color(black, colors)
+    colors = _sc(bg_color, colors)
+    neighborhood = nearest_neighbor(colors)
+    next_neighborhood = check_and_sort(neighborhood)
+
+    return_array = []
+
+    for key1, value1 in next_neighborhood.items():
+        key1 = convert_color(key1, sRGBColor)
+        r, g, b = key1.get_upscaled_value_tuple()
+        rhex, ghex, bhex = ["{:02x}".format(x) for x in (r, g, b)]
+        return_array.append('#' + rhex + ghex + bhex)
+
+    return return_array
