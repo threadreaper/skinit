@@ -61,9 +61,9 @@ def parse_args_exit(parser):
         color_functions.palette()
         sys.exit(0)
 
-    if args.r:
-        export.update_theme(args.r)
-        logging.info("Switching theme to %s.", args.r)
+    if args.red:
+        export.update_theme(args.red)
+        logging.info("Switching theme to %s.", args.red)
 
 
 def parse_args(parser):

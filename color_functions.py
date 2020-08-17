@@ -14,17 +14,24 @@ import sys
 from math import sqrt
 
 
-def palette():
+def palette(*args):
     """Generate a preview palette to be displayed in the terminal.
     Expects a list of 16 Color objects as input"""
-    for i in range(16):
-        if i % 8 == 0:
-            print()
-        if i > 7:
-            i = "8;5;%s" % i
-        print("\033[4%sm%s\033[0m" % (i, " " * (80 // 20)), end="")
-    print("\n")
-
+    if not args:
+        for i in range(16):
+            if i % 8 == 0:
+                print()
+            if i > 7:
+                i = "8;5;%s" % i
+            print("\033[4%sm%s\033[0m" % (i, " " * (80 // 20)), end="")
+        print("\n")
+    else:
+        for i, x in enumerate(*args):
+            r, g, b = x.rgb_value
+            if i % 8 == 0:
+                print()
+            print("\033[48;2;%s;%s;%sm    " % (r, g, b), end="")
+        print()
 
 class Color:
     """Class for colors creating color objects, exposes methods for
@@ -35,6 +42,7 @@ class Color:
         self.hex_value = str(hex_color)
         self.rgb_value = self.rgb()
         self.hsv_value = self.hsv()
+        self.lab_value = self.lab()
 
     def rgb(self):
         """returns color in rgb format"""
@@ -62,6 +70,22 @@ class Color:
         sat = 0 if rgb_max == 0 else diff / rgb_max
         return float("{:.2f}".format(hue)), float("{:.2f}".format(sat)), \
             float("{:.2f}".format(val))
+
+    def lab(self):
+        r, g, b = [xx / 255 for xx in self.rgb()]
+        r, g, b = [(((xx + 0.055) / 1.055) ** 2.4) if xx > 0.04045 else xx / 12.92 for xx in (r, g, b)]
+
+        xx = (r * 0.4124 + g * 0.3576 + b * 0.1805)
+        yy = (r * 0.2126 + g * 0.7152 + b * 0.0722)
+        zz = (r * 0.0193 + g * 0.1192 + b * 0.9505)
+
+        xx = (xx / 95.047)
+        yy = (yy / 100)
+        zz = (zz / 108.883)
+
+        xx, yy, zz = [xx ** 1 / 3 if xx > 0.008856 else (7.787 * xx) + (16 / 116) for xx in (xx, yy, zz)]
+
+        return [(116 * yy) - 16, 500 * (xx - yy), 200 * (yy - zz)]
 
     def shade(self, amt):
         """lighten/darken a color by a positive or negative
@@ -92,7 +116,8 @@ def closest_color(rgb, colors):
         r_prime, g_prime, b_prime = color.rgb_value
         color_diff = sqrt(abs(r - r_prime) ** 2 + abs(g - g_prime) ** 2
                           + abs(b - b_prime) ** 2)
-        color_diffs.append((color_diff, color))
+        if color_diff != 0:
+            color_diffs.append((color_diff, color))
     return min(color_diffs)[1]
 
 
@@ -104,7 +129,7 @@ def sort_colors(color, colors):
     _sorted.insert(0, color)
     x = len(colors)
     for i in range(x):
-        _sorted.insert(i+1, closest_color(_sorted[i].rgb(), colors))
+        _sorted.insert(i + 1, closest_color(_sorted[i].rgb(), colors))
         colors = _take_out(_sorted[i+1], colors)
     return _sorted
 
@@ -142,4 +167,17 @@ def get(img):
         colors = _take_out(x, colors)
     colors = sort_colors(bg_color, colors)
     colors.insert(7, fg_color)
+    """ A nearest neighbor function
+    data = {}
+    for color in colors:
+        rgb = color.rgb()
+        data.update({color.rgb_value: (closest_color(rgb, colors)).rgb()})
+    for key, val in data.items():
+        r, g, b = key
+        print(key, end="")
+        print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
+        r, g, b = val
+        print(val, end="")
+        print("\033[48;2;%s;%s;%sm    \033[0m" % (r, g, b), end="")
+        print()"""
     return colors
